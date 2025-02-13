@@ -1,7 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 const isProduction = import.meta.env.PROD;
-const BASE_URL = isProduction ? "/.netlify/functions" : "";
+const BASE_URL = isProduction ? "/.netlify/functions" : "/api";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -15,7 +15,7 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const fullUrl = `${BASE_URL}${url}`;
+  const fullUrl = `${BASE_URL}${url.replace('/api', '')}`;
   const res = await fetch(fullUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
@@ -33,7 +33,8 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const fullUrl = `${BASE_URL}${queryKey[0]}`;
+    const path = queryKey[0] as string;
+    const fullUrl = `${BASE_URL}${path.replace('/api', '')}`;
     const res = await fetch(fullUrl, {
       credentials: "include",
     });
